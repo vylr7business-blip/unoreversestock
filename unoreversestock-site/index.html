@@ -251,7 +251,7 @@ footer small{font-family:var(--f-label);font-size:.66rem;letter-spacing:.26em;te
       <a href="#trial">Trial</a>
       <a href="#scripture">Scripture</a>
       <a href="#path">Path</a>
-      <a class="kneel" href="https://ponsfamily.com/launchpad" target="_blank" rel="noopener">Kneel</a>
+      <a class="kneel" href="https://pump.fun" target="_blank" rel="noopener">Kneel</a>
     </div>
   </div>
 </nav>
@@ -283,7 +283,7 @@ footer small{font-family:var(--f-label);font-size:.66rem;letter-spacing:.26em;te
     <h1>Behold the Reverse</h1>
     <p>One card holds dominion over the flow of all fate. <strong>What is dealt against you shall be turned and returned.</strong> Behold the relic enthroned. Bear witness. Send it back.</p>
     <div class="btns">
-      <a class="btn solid" href="https://ponsfamily.com/launchpad" target="_blank" rel="noopener">Kneel</a>
+      <a class="btn solid" href="https://pump.fun" target="_blank" rel="noopener">Kneel</a>
       <a class="btn" href="#trial">Face the Trial</a>
     </div>
   </div>
@@ -414,7 +414,7 @@ footer small{font-family:var(--f-label);font-size:.66rem;letter-spacing:.26em;te
       <article class="rite">
         <h3>Kneel at the Launchpad</h3>
         <p>Every pilgrimage begins on bended knee. Enter the launchpad and claim your place among the devoted.</p>
-        <a class="btn solid" href="https://ponsfamily.com/launchpad" target="_blank" rel="noopener">Kneel</a>
+        <a class="btn solid" href="https://pump.fun" target="_blank" rel="noopener">Kneel</a>
       </article>
       <article class="rite">
         <h3>Join the Congregation</h3>
@@ -448,7 +448,7 @@ footer small{font-family:var(--f-label);font-size:.66rem;letter-spacing:.26em;te
 <footer>
   <svg class="orn" style="margin:0"><use href="#orn"/></svg>
   <div class="fl">
-    <a href="https://ponsfamily.com/launchpad" target="_blank" rel="noopener">Launchpad</a>
+    <a href="https://pump.fun" target="_blank" rel="noopener">pump.fun</a>
     <a href="https://x.com/UnoReverseStock" target="_blank" rel="noopener">X / Twitter</a>
     <a href="#altar">Return to the Altar</a>
   </div>
@@ -804,12 +804,31 @@ function layout(){
   if (window.__relicResize) window.__relicResize();
 }
 
-var boostGlow = 0;
+var boostGlow = 0, RC = document.createElement('canvas'), rcx = RC.getContext('2d');
 function render(now){
   var t = (now - T0) / 1000;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
   ctx.drawImage(stat, 0, 0, W, H);
+
+  /* the relic mirrored in the marble, in front of the steps */
+  var RCV = window.__relicCanvas;
+  if (RCV && (RCV.width || RCV.naturalWidth)){
+    var mp = P(0, -1.9, 12.2), dl = P(0, 0, 11.0)[1], ch = cardSpot.h;
+    var bw = window.__relicIsImg ? ch * .647 : host.clientWidth, bh = window.__relicIsImg ? ch : host.clientHeight;
+    if (RC.width !== cv.width || RC.height !== cv.height){ RC.width = cv.width; RC.height = cv.height; }
+    rcx.setTransform(DPR, 0, 0, DPR, 0, 0); rcx.globalCompositeOperation = 'source-over'; rcx.clearRect(0, 0, W, H);
+    rcx.save(); rcx.translate(mp[0], mp[1]); rcx.scale(1, -1);
+    try { rcx.drawImage(RCV, -bw / 2, -bh / 2, bw, bh); } catch(e){}
+    rcx.restore();
+    rcx.globalCompositeOperation = 'destination-in';
+    var mg = rcx.createLinearGradient(0, mp[1] - ch / 2, 0, mp[1] + ch * .45);
+    mg.addColorStop(0, 'rgba(0,0,0,1)'); mg.addColorStop(1, 'rgba(0,0,0,0)');
+    rcx.fillStyle = mg; rcx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, dl, W, H - dl); ctx.clip();
+    ctx.globalAlpha = .3; ctx.drawImage(RC, 0, 0, W, H); ctx.globalAlpha = 1;
+    ctx.restore();
+  }
 
   /* light falling from the roof onto the throne */
   var top = P(0, CEIL, 12.4), bot = P(0, 1.1, 12.4), sw = f / 12.4;
@@ -892,7 +911,8 @@ var THREE = window.THREE, ok = false, dir = 1, boost = 0, clicks = 0;
 try { var tc = document.createElement('canvas'); ok = !!(THREE && (tc.getContext('webgl') || tc.getContext('experimental-webgl'))); } catch(e){ ok = false; }
 if (ok){
   try {
-    var renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    var renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+    window.__relicCanvas = renderer.domElement;
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
@@ -953,7 +973,7 @@ if (ok){
 }
 if (!ok){
   var img = document.createElement('img'); img.className = 'fallback'; img.src = 'card-front-red.jpg'; img.alt = 'The Reverse card';
-  layer.appendChild(img); host.style.pointerEvents = 'auto'; layout();
+  layer.appendChild(img); host.style.pointerEvents = 'auto'; window.__relicCanvas = img; window.__relicIsImg = true; layout();
 }
 
 function reverse(){
